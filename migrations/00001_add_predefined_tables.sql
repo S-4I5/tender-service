@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS employee (
 --INSERT INTO employee (id, username, first_name, last_name)
 --       VALUES ('33ef51b7-4297-4d81-82ef-3c50e00f5db1', 'sex', 'xd', 'xd');
 
-CREATE TYPE organization_type AS ENUM (
-    'IE',
-    'LLC',
-    'JSC'
-);
+--CREATE TYPE organization_type AS ENUM (
+--    'IE',
+--    'LLC',
+--    'JSC'
+--);
 
 CREATE TABLE IF NOT EXISTS organization (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -8,6 +8,7 @@ import (
 	"github.com/pressly/goose/v3"
 	"net/http"
 	"tender-service/internal/config"
+	"tender-service/internal/middleware"
 )
 
 type App struct {
@@ -80,7 +81,7 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 
 	a.server = http.Server{
 		Addr:    a.provider.config.Server.Address,
-		Handler: main,
+		Handler: middleware.GetLoggerMiddleware(main),
 	}
 	return nil
 }
