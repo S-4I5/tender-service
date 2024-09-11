@@ -1,4 +1,4 @@
 server:
-  address: :8080
+  address: host.docker.internal:8080
 postgres:
   conn: postgres://postgres:postgres@localhost:5432/tender-service

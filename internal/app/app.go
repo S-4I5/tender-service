@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+	"log"
 	"net/http"
 	"tender-service/internal/config"
 	"tender-service/internal/middleware"
@@ -79,8 +80,10 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 
 	main.Handle("/api/", http.StripPrefix("/api", api))
 
+	log.Println("starting on:" + a.provider.config.Server.Address)
+
 	a.server = http.Server{
-		Addr:    "localhost:8080", //a.provider.config.Server.Address,
+		Addr:    a.provider.config.Server.Address, //a.provider.config.Server.Address,
 		Handler: middleware.GetLoggerMiddleware(main),
 	}
 	return nil
