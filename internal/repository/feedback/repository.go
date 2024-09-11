@@ -14,13 +14,12 @@ type repository struct {
 }
 
 const (
-	tableName             = "feedback"
-	idColumnName          = "id"
-	bidIdColumnName       = "bid_id"
-	descriptionColumnName = "description"
-	usernameColumnName    = "username"
-	createdAtColumnName   = "created_at"
-
+	tableName                = "feedback"
+	idColumnName             = "id"
+	bidIdColumnName          = "bid_id"
+	descriptionColumnName    = "description"
+	usernameColumnName       = "username"
+	createdAtColumnName      = "created_at"
 	bidTableName             = "bid"
 	bidTableIdColumnName     = "bid.id"
 	bidTableTenderNameColumn = "bid.tender_id"
