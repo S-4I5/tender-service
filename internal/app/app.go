@@ -80,7 +80,7 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 	main.Handle("/api/", http.StripPrefix("/api", api))
 
 	a.server = http.Server{
-		Addr:    ":8080", //a.provider.config.Server.Address,
+		Addr:    "localhost:8080", //a.provider.config.Server.Address,
 		Handler: middleware.GetLoggerMiddleware(main),
 	}
 	return nil
