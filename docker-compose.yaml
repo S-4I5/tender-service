@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+
+#  tender-service:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: tender-service_app_container
+#    environment:
+#      - POSTGRES_CONN=postgres://postgres:postgres@tender-service-db:5432/tender-service
+#    #      - POSTGRES_USER=postgres
+##      - POSTGRES_PASSWORD=password
+##      - POSTGRES_DB=user-service
+##      - POSTGRES_URL=user-postgres:5432
+#    restart: unless-stopped
+#    depends_on:
+#      tender-service-db:
+#        condition: service_healthy
+#    ports:
+#      - "8080:8080"
+
+  tender-service-db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tender-service
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d password" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "5432:5432"
