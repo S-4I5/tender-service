@@ -83,7 +83,7 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 	log.Println("starting on:" + a.provider.config.Server.Address)
 
 	a.server = http.Server{
-		Addr:    a.provider.config.Server.Address, //a.provider.config.Server.Address,
+		Addr:    a.provider.config.Server.Address,
 		Handler: middleware.GetLoggerMiddleware(main),
 	}
 	return nil
