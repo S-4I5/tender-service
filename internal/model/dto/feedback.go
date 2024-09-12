@@ -6,7 +6,7 @@ import (
 )
 
 type FeedbackDto struct {
-	Id          uuid.UUID
-	Description string
-	CreatedAt   time.Time
+	Id          uuid.UUID `json:"id"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"createdAt"`
 }

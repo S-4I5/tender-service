@@ -7,28 +7,27 @@ import (
 )
 
 type CreateBidDto struct {
-	Name        string         `yaml:"name"`
-	Description string         `yaml:"description"`
-	Status      bid.Status     `yaml:"status"`
-	TenderId    uuid.UUID      `yaml:"tenderId"`
-	AuthorType  bid.AuthorType `json:"authorType"`
-	//OrganizationId uuid.UUID  `yaml:"organizationId"`
-	AuthorId uuid.UUID `yaml:"authorId"`
+	Name        string         `json:"name" validate:"required"`
+	Description string         `json:"description" validate:"required"`
+	Status      bid.Status     `json:"status" validate:"required"`
+	TenderId    uuid.UUID      `json:"tenderId" validate:"required"`
+	AuthorType  bid.AuthorType `json:"authorType" validate:"required"`
+	AuthorId    uuid.UUID      `json:"authorId" validate:"required"`
 }
 
 type BidDto struct {
-	Id          uuid.UUID      `yaml:"id"`
-	Name        string         `yaml:"name"`
-	Description string         `yaml:"description"`
-	Status      bid.Status     `yaml:"status"`
-	TenderId    uuid.UUID      `yaml:"tenderId"`
-	AuthorType  bid.AuthorType `yaml:"authorType"`
-	AuthorId    uuid.UUID      `yaml:"authorId"`
-	Version     int            `yaml:"version"`
-	CreatedAt   time.Time      `yaml:"createdAt"`
+	Id          uuid.UUID      `json:"id"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Status      bid.Status     `json:"status"`
+	TenderId    uuid.UUID      `json:"tenderId"`
+	AuthorType  bid.AuthorType `json:"authorType"`
+	AuthorId    uuid.UUID      `json:"authorId"`
+	Version     int            `json:"version"`
+	CreatedAt   time.Time      `json:"createdAt"`
 }
 
 type UpdateBidDto struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }

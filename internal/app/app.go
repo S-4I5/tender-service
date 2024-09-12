@@ -99,10 +99,6 @@ func (a *App) Stop() error {
 
 func (a *App) runMigrationsForPostgres(_ context.Context) error {
 
-	//if a.provider.config.StorageConfig.Source != config.Postgres {
-	//	return nil
-	//}
-
 	//conn := fmt.Sprintf("postgres://%s:%s@%s/%s",
 	//	a.provider.config.Postgres.Username,
 	//	a.provider.config.Postgres.Password,
@@ -119,7 +115,7 @@ func (a *App) runMigrationsForPostgres(_ context.Context) error {
 		return err
 	}
 
-	err = goose.Up(sql, "./migrations")
+	err = goose.Up(sql, a.provider.config.Postgres.MigrationsDir)
 	if err != nil {
 		return err
 	}

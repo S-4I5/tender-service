@@ -42,7 +42,6 @@ func (s *service) GetTenderById(ctx context.Context, tenderId uuid.UUID) (tender
 func (s *service) GetTenders(ctx context.Context, page util.Page, serviceTypes []tender.ServiceType) ([]dto.TenderDto, error) {
 	tenders, err := s.tenderRepository.GetTenderList(ctx, page, serviceTypes, "", true)
 	if err != nil {
-		fmt.Println("XD")
 		return nil, err
 	}
 
@@ -104,13 +103,13 @@ func (s *service) GetTenderStatus(ctx context.Context, tenderId uuid.UUID, usern
 func (s *service) UpdateTenderStatus(ctx context.Context, tenderId uuid.UUID, username string, status tender.Status) (dto.TenderDto, error) {
 	err := s.ValidateEmployeeRightsOnTender(ctx, tenderId, username)
 	if err != nil {
-		fmt.Println("XD")
+		fmt.Println("e2")
 		return dto.TenderDto{}, err
 	}
 
 	updated, err := s.tenderRepository.UpdateTenderStatus(ctx, tenderId, status)
 	if err != nil {
-		fmt.Println("XD1", err)
+		fmt.Println("ee", err)
 		return dto.TenderDto{}, err
 	}
 

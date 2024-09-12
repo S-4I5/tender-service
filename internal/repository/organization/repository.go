@@ -68,5 +68,7 @@ func (r *repository) OrganizationExistById(ctx context.Context, organizationId u
 		return false, err
 	}
 
+	rows.Close()
+
 	return result, nil
 }

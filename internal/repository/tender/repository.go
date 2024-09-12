@@ -46,9 +46,10 @@ func NewTenderRepository(pool *pgxpool.Pool) *repository {
 }
 
 func (r *repository) SaveTender(ctx context.Context, ten tender.Tender) (tender.Tender, error) {
+
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
-		panic(err)
+		return tender.Tender{}, err
 	}
 
 	defer tx.Rollback(ctx)
@@ -107,6 +108,8 @@ func (r *repository) SaveTender(ctx context.Context, ten tender.Tender) (tender.
 	if err != nil {
 		return tender.Tender{}, err
 	}
+
+	rows.Close()
 
 	savedTender.TenderVersionId = sql2.NullInt32{
 		Int32: int32(savedVersion.Id),
