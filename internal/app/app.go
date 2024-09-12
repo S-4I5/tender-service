@@ -106,6 +106,8 @@ func (a *App) runMigrationsForPostgres(_ context.Context) error {
 	//	a.provider.config.Postgres.Database,
 	//)
 
+	log.Println("running migrations in:", a.provider.config.Postgres.MigrationsDir)
+
 	conn := fmt.Sprintf(a.provider.config.Postgres.Conn)
 
 	dsn := flag.String("dsn", conn, "PostgreSQL mock source name")

@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 -- Table: bid_versions
-CREATE TABLE tender (
+CREATE TABLE IF NOT EXISTS tender (
     id uuid PRIMARY KEY DEFAULT public.uuid_generate_v4(),      -- Tender ID (string)
     status VARCHAR(100),                  -- Status (string)
     tender_version_id INT,                 -- Version number (int)
@@ -11,7 +11,7 @@ CREATE TABLE tender (
 );
 
 -- Table: tender_versions
-CREATE TABLE tender_version (
+CREATE TABLE IF NOT EXISTS tender_version (
     id SERIAL PRIMARY KEY,                -- Integer primary key
     tender_id uuid,      -- Tender ID (string)
     name VARCHAR(255) NOT NULL,           -- Name (string)

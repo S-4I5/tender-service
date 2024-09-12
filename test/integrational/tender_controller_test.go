@@ -144,6 +144,17 @@ func (s *ApiTestSuite) TestGetTendersList() {
 	test.ValidateJsonResponse(s.T(), actual, expected, 200)
 }
 
+func (s *ApiTestSuite) TestGetTendersListWithIncorrectFilters() {
+	actual, err := http.Get(s.host + fmt.Sprintf("/tenders?service_type=%s", "something"))
+	if err != nil {
+		s.T().Fatalf("Failed to send request: %v", err)
+	}
+	defer actual.Body.Close()
+
+	expected := test.ReadJson("/tender/response/TestGetTendersListWithIncorrectFilters")
+	test.ValidateJsonResponse(s.T(), actual, expected, 400)
+}
+
 func (s *ApiTestSuite) TestGetTendersListWithFilters() {
 	testCases := []struct {
 		name    string
@@ -266,7 +277,7 @@ func (s *ApiTestSuite) TestGetTenderStatusSubTest() {
 			}
 			defer actual.Body.Close()
 
-			test.ValidateResponse(s.T(), actual, string(tc.expected), 200)
+			test.ValidateJsonStringResponse(s.T(), actual, string(tc.expected), 200)
 		})
 	}
 }
@@ -378,6 +389,212 @@ func (s *ApiTestSuite) TestReturn401WhenGetMyTendersAndEmployeeDoesNotExists() {
 
 	expected := test.ReadJson("/tender/response/TestReturn401WhenGetMyTendersAndEmployeeDoesNotExists")
 	test.ValidateJsonResponse(s.T(), actual, expected, 401)
+}
+
+func (s *ApiTestSuite) TestEditTender() {
+	testCases := []struct {
+		name     string
+		username string
+		status   int
+	}{
+		{name: "WhenOwner", username: "test", status: 200},
+		{name: "WhenEmployeeDontExists", username: "test2", status: 401},
+		{name: "WhenEmployeeNotInOrg", username: "other", status: 403},
+	}
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			orgId := s.createOrganization()
+			_ = s.createEmployeeInOrg("test", orgId)
+			_ = s.createEmployee("other")
+
+			tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
+				Name:            "1",
+				Description:     "2",
+				Status:          "Created",
+				ServiceType:     "Delivery",
+				OrganizationId:  orgId,
+				CreatorUsername: "test",
+			})
+
+			given := dto.UpdateTenderDto{
+				Name:        "new",
+				Description: "new",
+				ServiceType: "Construction",
+			}
+
+			actual, err := test.HttpPatch(s.host+fmt.Sprintf("/tenders/%s/edit?username=%s", tend.Id.String(), tc.username), given)
+			if err != nil {
+				s.T().Fatalf("Failed to send request: %v", err)
+			}
+			defer actual.Body.Close()
+
+			expected := test.ReadJson("/tender/response/TestEditTender/" + tc.name)
+			test.ValidateJsonResponse(s.T(), actual, expected, tc.status)
+		})
+	}
+}
+
+func (s *ApiTestSuite) TestReturn404WhenEditTenderAndTenderDontExists() {
+	_ = s.createEmployee("test")
+	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
+
+	given := dto.UpdateTenderDto{
+		Name:        "new",
+		Description: "new",
+		ServiceType: tender.Construction,
+	}
+
+	actual, err := test.HttpPatch(s.host+fmt.Sprintf("/tenders/%s/edit?username=%s", id.String(), "test"), given)
+	if err != nil {
+		s.T().Fatalf("Failed to send request: %v", err)
+	}
+	defer actual.Body.Close()
+
+	expected := test.ReadJson("/tender/response/TestReturn404WhenEditTenderAndTenderDontExists")
+	test.ValidateJsonResponse(s.T(), actual, expected, http.StatusNotFound)
+}
+
+func (s *ApiTestSuite) TestUpdateTenderStatus() {
+	testCases := []struct {
+		name     string
+		username string
+		status   int
+	}{
+		{name: "WhenOwner", username: "test", status: 200},
+		{name: "WhenEmployeeDontExists", username: "test2", status: 401},
+		{name: "WhenEmployeeNotInOrg", username: "other", status: 403},
+	}
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			orgId := s.createOrganization()
+			_ = s.createEmployeeInOrg("test", orgId)
+			_ = s.createEmployee("other")
+
+			tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
+				Name:            "1",
+				Description:     "2",
+				Status:          "Published",
+				ServiceType:     "Delivery",
+				OrganizationId:  orgId,
+				CreatorUsername: "test",
+			})
+
+			actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/status?username=%s&status=%s", tend.Id.String(), tc.username, tender.Created), nil)
+			if err != nil {
+				s.T().Fatalf("Failed to send request: %v", err)
+			}
+			defer actual.Body.Close()
+
+			expected := test.ReadJson("/tender/response/TestUpdateTenderStatus/" + tc.name)
+			test.ValidateJsonResponse(s.T(), actual, expected, tc.status)
+		})
+	}
+}
+
+func (s *ApiTestSuite) TestReturn404WhenUpdateTenderStatusAndTenderDontExists() {
+	_ = s.createEmployee("test")
+	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
+
+	actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/status?username=%s&status=%s", id.String(), "test", tender.Created), nil)
+	if err != nil {
+		s.T().Fatalf("Failed to send request: %v", err)
+	}
+	defer actual.Body.Close()
+
+	expected := test.ReadJson("/tender/response/TestReturn404WhenUpdateTenderStatusAndTenderDontExists")
+	test.ValidateJsonResponse(s.T(), actual, expected, http.StatusNotFound)
+}
+
+func (s *ApiTestSuite) TestReturn400WhenUpdateTenderStatusAndIncorrectStatus() {
+	_ = s.createEmployee("test")
+	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
+
+	actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/status?username=%s&status=%s", id.String(), "test", "something"), nil)
+	if err != nil {
+		s.T().Fatalf("Failed to send request: %v", err)
+	}
+	defer actual.Body.Close()
+
+	expected := test.ReadJson("/tender/response/TestReturn400WhenUpdateTenderStatusAndIncorrectStatus")
+	test.ValidateJsonResponse(s.T(), actual, expected, http.StatusBadRequest)
+}
+
+func (s *ApiTestSuite) TestRollbackTender() {
+	testCases := []struct {
+		name     string
+		username string
+		status   int
+	}{
+		{name: "WhenOwner", username: "test", status: 200},
+		{name: "WhenEmployeeDontExists", username: "test2", status: 401},
+		{name: "WhenEmployeeNotInOrg", username: "other", status: 403},
+	}
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			ctx := context.Background()
+
+			orgId := s.createOrganization()
+			_ = s.createEmployeeInOrg("test", orgId)
+			_ = s.createEmployee("other")
+
+			tend, _ := s.tenderRepository.SaveTender(ctx, tender.Tender{
+				Name:            "old",
+				Description:     "old",
+				Status:          "Created",
+				ServiceType:     "Delivery",
+				OrganizationId:  orgId,
+				CreatorUsername: "test",
+			})
+
+			s.tenderRepository.UpdateTender(ctx, tend.Id, "new", "new", tender.Construction)
+
+			actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/rollback/1?username=%s", tend.Id.String(), tc.username), nil)
+			if err != nil {
+				s.T().Fatalf("Failed to send request: %v", err)
+			}
+			defer actual.Body.Close()
+
+			expected := test.ReadJson("/tender/response/TestRollbackTender/" + tc.name)
+			test.ValidateJsonResponse(s.T(), actual, expected, tc.status)
+		})
+	}
+}
+
+func (s *ApiTestSuite) TestReturn404WhenRollbackTenderWhenTenderDontExists() {
+	_ = s.createEmployee("test")
+	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
+
+	actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/rollback/1?username=%s", id, "test"), nil)
+	if err != nil {
+		s.T().Fatalf("Failed to send request: %v", err)
+	}
+	defer actual.Body.Close()
+
+	expected := test.ReadJson("/tender/response/TestReturn404WhenRollbackTenderWhenTenderDontExists")
+	test.ValidateJsonResponse(s.T(), actual, expected, 404)
+}
+
+func (s *ApiTestSuite) TestReturn400WhenRollbackTenderWhenTenderVersionDontExists() {
+	orgId := s.createOrganization()
+	_ = s.createEmployeeInOrg("test", orgId)
+
+	tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
+		Name:            "old",
+		Description:     "old",
+		Status:          "Created",
+		ServiceType:     "Delivery",
+		OrganizationId:  orgId,
+		CreatorUsername: "test",
+	})
+
+	actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/rollback/2?username=%s", tend.Id.String(), "test"), nil)
+	if err != nil {
+		s.T().Fatalf("Failed to send request: %v", err)
+	}
+	defer actual.Body.Close()
+
+	expected := test.ReadJson("/tender/response/TestReturn400WhenRollbackTenderWhenTenderVersionDontExists")
+	test.ValidateJsonResponse(s.T(), actual, expected, 400)
 }
 
 func TestTenderController(t *testing.T) {

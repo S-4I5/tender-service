@@ -45,6 +45,8 @@ func (r *repository) UsersHasSimilarOrganization(ctx context.Context, userId uui
 		return false, err
 	}
 
+	rows.Close()
+
 	return result, nil
 }
 
@@ -75,6 +77,8 @@ func (r *repository) IsResponsibleInOrganization(ctx context.Context, username s
 	if err != nil {
 		return false, err
 	}
+
+	rows.Close()
 
 	return result, nil
 }

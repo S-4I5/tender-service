@@ -8,13 +8,16 @@ import (
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/suite"
+	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"log"
 	"math/rand"
 	"reflect"
 	"tender-service/internal/app"
 	"tender-service/internal/config"
 	"tender-service/internal/repository"
+	"time"
 	"unsafe"
 )
 
@@ -31,25 +34,33 @@ type ApiTestSuite struct {
 }
 
 func (s *ApiTestSuite) SetupSuite() {
-	fmt.Println("before")
+	log.Println("before")
 
 	ctx := context.Background()
 
-	psql, _ := postgres.RunContainer(
-		ctx,
+	psql, err := postgres.Run(ctx,
+		"docker.io/postgres:16-alpine",
 		postgres.WithDatabase("tender-service"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
+		testcontainers.WithWaitStrategy(wait.ForLog("database system is ready to accept connections").WithOccurrence(2).WithStartupTimeout(30*time.Second)),
 	)
+	if err != nil {
+		log.Fatal("Cannot setup test container:", err.Error())
+	}
+
 	s.container = psql
 
-	host, _ := s.container.Host(ctx)
-
-	conn := "postgres://postgres:postgres@" + host + "/tender-service"
+	conn, err := s.container.ConnectionString(ctx)
+	if err != nil {
+		log.Fatal("XD", err.Error())
+	}
 
 	randomPort := rand.Intn(65535-1024+1) + 1024
 
 	s.host = fmt.Sprintf("http://localhost:%d/api", randomPort)
+
+	fmt.Println(conn)
 
 	curApp, err := app.NewApp(context.Background(), config.Config{
 		Server: config.ServerConfig{Address: fmt.Sprintf(":%d", randomPort)},
@@ -59,20 +70,19 @@ func (s *ApiTestSuite) SetupSuite() {
 		},
 	})
 	if err != nil {
-		fmt.Println(err)
-		s.T().Fatalf("XD")
+		log.Fatal("cannot create app:", err.Error())
 	}
 
 	go func() {
 		err = curApp.Run()
 		if err != nil {
-			log.Printf("failed to run app: %s\n", err.Error())
+			log.Println("app stopped:", err.Error())
 		}
 	}()
 
 	pool, err := pgxpool.New(ctx, conn)
 	if err != nil {
-		panic(err.Error())
+		log.Fatal("cannot create pool:", err.Error())
 	}
 
 	s.pool = pool
@@ -84,8 +94,6 @@ func (s *ApiTestSuite) SetupSuite() {
 	tenderRepoField := providerValue.Elem().FieldByName("tenderRepository")
 	s.tenderRepository = reflect.NewAt(tenderRepoField.Type(), unsafe.Pointer(tenderRepoField.UnsafeAddr())).Elem().Interface().(repository.TenderRepository)
 
-	//a, _ := s.tenderRepository.GetTenderList(ctx, util.NewPage(0, 1), nil, "", false)
-	//fmt.Println(a)
 }
 
 func (s *ApiTestSuite) TearDownSuite() {
@@ -95,13 +103,13 @@ func (s *ApiTestSuite) TearDownSuite() {
 }
 
 func (s *ApiTestSuite) BeforeTest(suiteName, testName string) {
-	fmt.Println("clear")
+	log.Println("clear")
 	_, _ = s.pool.Exec(context.Background(),
 		"TRUNCATE employee, organization, organization_responsible, tender, tender_version, bid, bid_version, decisions, feedback;")
 }
 
 func (s *ApiTestSuite) SetupSubTest() {
-	fmt.Println("clear sub")
+	log.Println("clear sub")
 	_, _ = s.pool.Exec(context.Background(),
 		"TRUNCATE employee, organization, organization_responsible, tender, tender_version, bid, bid_version, decisions, feedback;")
 }

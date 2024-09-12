@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE bid (
+CREATE TABLE IF NOT EXISTS bid (
     id uuid PRIMARY KEY DEFAULT public.uuid_generate_v4(),
     bid_version_id uuid,
     status VARCHAR(100),
@@ -10,7 +10,7 @@ CREATE TABLE bid (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()  -- Creation timestamp (time.Time)
 );
 
-CREATE TABLE bid_version (
+CREATE TABLE IF NOT EXISTS bid_version (
     id uuid PRIMARY KEY DEFAULT public.uuid_generate_v4(),                -- Integer primary key
     bid_id uuid DEFAULT public.uuid_generate_v4(),         -- Bid ID (string)
     name VARCHAR(255) NOT NULL,           -- Name (string)
@@ -19,7 +19,7 @@ CREATE TABLE bid_version (
 );
 
 -- Table: decisions
-CREATE TABLE decisions (
+CREATE TABLE IF NOT EXISTS decisions (
     id uuid PRIMARY KEY  DEFAULT public.uuid_generate_v4(),                  -- UUID primary key
     verdict VARCHAR(50) NOT NULL,         -- Verdict (enum or varchar to represent Verdict)
     username VARCHAR(255) NOT NULL,       -- Username (string)
@@ -27,7 +27,7 @@ CREATE TABLE decisions (
 );
 
 -- Table: feedback
-CREATE TABLE feedback (
+CREATE TABLE IF NOT EXISTS feedback (
     id uuid PRIMARY KEY DEFAULT public.uuid_generate_v4(),                  -- UUID primary key
     bid_id uuid NOT NULL,         -- Bid ID (string)
     description TEXT,                     -- Description (string)

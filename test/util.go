@@ -11,6 +11,35 @@ import (
 	"testing"
 )
 
+func HttpPut(url string, dto any) (*http.Response, error) {
+	return do(http.MethodPut, url, dto)
+}
+
+func HttpPatch(url string, dto any) (*http.Response, error) {
+	return do(http.MethodPatch, url, dto)
+}
+
+func do(method, url string, dto any) (*http.Response, error) {
+	client := &http.Client{}
+
+	req, err := http.NewRequest(method, url, ToBuffer(dto))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func ValidateJsonStringResponse(t *testing.T, resp *http.Response, expected string, code int) {
+	ValidateResponse(t, resp, "\""+expected+"\"\n", code)
+}
+
 func ValidateResponse(t *testing.T, resp *http.Response, expected string, code int) {
 	if resp.StatusCode != code {
 		t.Errorf("Expected status %d, got %v", code, resp.StatusCode)
@@ -21,8 +50,7 @@ func ValidateResponse(t *testing.T, resp *http.Response, expected string, code i
 		t.Fatalf("Failed to read response body: %v", err)
 	}
 
-	//expectedString := string(expected) + "\n"
-	if string(body) != "\""+expected+"\"\n" {
+	if string(body) != expected {
 		t.Errorf("Unexpected response body: got %v, want %v", string(body), expected)
 	}
 }

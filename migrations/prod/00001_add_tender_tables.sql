@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
 
-CREATE TABLE tender (
+CREATE TABLE IF NOT EXISTS tender (
     id uuid PRIMARY KEY DEFAULT public.uuid_generate_v4(),
     status VARCHAR(100),
     tender_version_id INT,
@@ -11,7 +11,7 @@ CREATE TABLE tender (
     creator_username VARCHAR(255)
 );
 
-CREATE TABLE tender_version (
+CREATE TABLE IF NOT EXISTS tender_version (
     id SERIAL PRIMARY KEY,
     tender_id uuid,
     name VARCHAR(255) NOT NULL,

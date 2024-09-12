@@ -1,0 +1,3 @@
+{
+  "reason": "tender_service.rollback_tender:bad_request:given tender version dont exists"
+}

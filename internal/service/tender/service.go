@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"tender-service/internal/mapper"
+	"tender-service/internal/model"
 	"tender-service/internal/model/dto"
 	"tender-service/internal/model/entity/tender"
 	"tender-service/internal/repository"
@@ -17,6 +18,8 @@ type service struct {
 	employeeService     service2.EmployeeService
 	organizationService service2.OrganizationService
 }
+
+var errTenderVersionDoesNotExists = fmt.Errorf("given tender version dont exists")
 
 func NewTenderService(
 	tenderRepository repository.TenderRepository,
@@ -133,7 +136,18 @@ func (s *service) EditTender(ctx context.Context, tenderDto dto.UpdateTenderDto,
 }
 
 func (s *service) RollbackTender(ctx context.Context, tenderId uuid.UUID, username string, version int) (dto.TenderDto, error) {
-	err := s.ValidateEmployeeRightsOnTender(ctx, tenderId, username)
+	op := "tender_service.rollback_tender"
+
+	tend, err := s.tenderRepository.GetTenderById(ctx, tenderId)
+	if err != nil {
+		return dto.TenderDto{}, err
+	}
+
+	if tend.Version < version {
+		return dto.TenderDto{}, model.NewBadRequestError(op, errTenderVersionDoesNotExists)
+	}
+
+	err = s.ValidateEmployeeRightsOnTender(ctx, tenderId, username)
 	if err != nil {
 		return dto.TenderDto{}, err
 	}
