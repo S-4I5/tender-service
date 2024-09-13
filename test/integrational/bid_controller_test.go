@@ -819,6 +819,7 @@ func (s *ApiTestSuite) TestReturn401WhenGetReviewsAndAuthorDontExists() {
 
 func (s *ApiTestSuite) TestSubmitDecisionApprove() {
 	ctx := context.Background()
+
 	orgId := s.createOrganization()
 	s.createEmployeeInOrg("test", orgId)
 	bidCreatorId := s.createEmployee("creator")
@@ -861,6 +862,7 @@ func (s *ApiTestSuite) TestSubmitDecisionApprove() {
 
 func (s *ApiTestSuite) TestSubmitDecisionApproveWhenNotEnoughApproves() {
 	ctx := context.Background()
+
 	orgId := s.createOrganization()
 	s.createEmployeeInOrg("test", orgId)
 	s.createEmployeeInOrg("test2", orgId)
@@ -904,6 +906,7 @@ func (s *ApiTestSuite) TestSubmitDecisionApproveWhenNotEnoughApproves() {
 
 func (s *ApiTestSuite) TestSubmitDecisionApproveWhenEnoughApproves() {
 	ctx := context.Background()
+
 	orgId := s.createOrganization()
 	s.createEmployeeInOrg("test", orgId)
 	s.createEmployeeInOrg("test2", orgId)
@@ -953,6 +956,7 @@ func (s *ApiTestSuite) TestSubmitDecisionApproveWhenEnoughApproves() {
 
 func (s *ApiTestSuite) TestSubmitDecisionRejected() {
 	ctx := context.Background()
+
 	orgId := s.createOrganization()
 	s.createEmployeeInOrg("test", orgId)
 	bidCreatorId := s.createEmployee("creator")

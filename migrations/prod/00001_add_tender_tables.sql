@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS tender (
     creator_username VARCHAR(50)
 );
 
+DROP TYPE IF EXISTS tender_version_service_type;
 CREATE TYPE tender_version_service_type AS ENUM (
     'Construction',
     'Delivery',

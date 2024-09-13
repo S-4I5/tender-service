@@ -1,16 +1,19 @@
 -- +goose Up
 -- +goose StatementBegin
+DROP TYPE IF EXISTS bid_author_type;
 CREATE TYPE bid_author_type AS ENUM (
     'Organization',
     'User'
 );
 
+DROP TYPE IF EXISTS bid_status;
 CREATE TYPE bid_status AS ENUM (
     'Created',
     'Published',
     'Canceled'
 );
 
+DROP TYPE IF EXISTS bid_decision_type;
 CREATE TYPE bid_decision_type AS ENUM (
     'Approved',
     'None',
@@ -36,6 +39,7 @@ CREATE TABLE IF NOT EXISTS bid_version (
     version INT NOT NULL
 );
 
+DROP TYPE IF EXISTS decision_verdict_type;
 CREATE TYPE decision_verdict_type AS ENUM (
     'Approved',
     'Rejected'

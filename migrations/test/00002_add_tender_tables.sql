@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS tender (
     creator_username VARCHAR(50)
 );
 
+DROP TYPE IF EXISTS tender_version_service_type;
 CREATE TYPE tender_version_service_type AS ENUM (
     'Construction',
     'Delivery',
@@ -30,7 +31,7 @@ ALTER TABLE tender ADD CONSTRAINT fk_tender_version_id FOREIGN KEY (tender_versi
 ALTER TABLE tender ADD CONSTRAINT fk_organization_id FOREIGN KEY (organization_id) REFERENCES organization(id);
 ALTER TABLE tender ADD CONSTRAINT fk_creator_username FOREIGN KEY (creator_username) REFERENCES employee(username);
 
-ALTER TABLE tender_version ADD CONSTRAINT fk_tender_id FOREIGN KEY (tender_id) REFERENCES tender(id) ON DELETE CASCADE;-- +goose StatementEnd
+ALTER TABLE tender_version ADD CONSTRAINT fk_tender_id FOREIGN KEY (tender_id) REFERENCES tender(id) ON DELETE CASCADE;
 -- +goose StatementEnd
 
 -- +goose Down
