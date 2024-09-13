@@ -27,6 +27,7 @@ type OrganizationResponsibleRepository interface {
 	IsResponsibleInOrganization(ctx context.Context, username string, organizationId uuid.UUID) (bool, error)
 	CountEmployeesInOrganization(ctx context.Context, organizationId uuid.UUID) (int, error)
 	UsersHasSimilarOrganization(ctx context.Context, userId uuid.UUID, username string) (bool, error)
+	IsEmployeeInAnyOrganization(ctx context.Context, userId uuid.UUID) (bool, error)
 }
 
 type TenderRepository interface {
@@ -39,6 +40,7 @@ type TenderRepository interface {
 }
 
 type BidRepository interface {
+	UpdateBidDecision(ctx context.Context, id uuid.UUID, dec bid.Decision) (bid.Bid, error)
 	SaveBid(ctx context.Context, version bid.Bid) (bid.Bid, error)
 	GetBidById(ctx context.Context, id uuid.UUID) (bid.Bid, error)
 	GetBidList(ctx context.Context, page util.Page, tenderId uuid.UUID, userId uuid.UUID) ([]bid.Bid, error)

@@ -42,11 +42,12 @@ type OrganizationService interface {
 	ValidateOrganizationExists(ctx context.Context, id uuid.UUID) error
 	ValidateEmployeeBelongsToOrganization(ctx context.Context, orgId uuid.UUID, username string) error
 	GetOrganizationEmployeeCount(ctx context.Context, id uuid.UUID) (int, error)
+	ValidateEmployeeInAnyOrganization(ctx context.Context, userId uuid.UUID) error
 }
 
 type EmployeeService interface {
 	GetEmployeeByUsername(ctx context.Context, username string) (entity.Employee, error)
-	ValidateEmployeeExists(ctx context.Context, username string) error
+	ValidateEmployeeExistsByUsername(ctx context.Context, username string) error
 	GetEmployeeByUsernameById(ctx context.Context, id uuid.UUID) (entity.Employee, error)
 	ValidateEmployeeExistsById(ctx context.Context, id uuid.UUID) error
 }

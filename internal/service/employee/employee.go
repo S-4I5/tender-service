@@ -25,9 +25,8 @@ func (s *service) GetEmployeeByUsername(ctx context.Context, username string) (e
 	return s.employeeRepository.GetEmployeeByUsername(ctx, username)
 }
 
-func (s *service) ValidateEmployeeExists(ctx context.Context, username string) error {
+func (s *service) ValidateEmployeeExistsByUsername(ctx context.Context, username string) error {
 	op := "employee_service.validate_employee_exists"
-
 	exists, err := s.employeeRepository.EmployeeExistByUsername(ctx, username)
 	if err != nil {
 		return err
@@ -44,12 +43,13 @@ func (s *service) GetEmployeeByUsernameById(ctx context.Context, id uuid.UUID) (
 }
 
 func (s *service) ValidateEmployeeExistsById(ctx context.Context, id uuid.UUID) error {
+	op := "employee_service.validate_employee_exists"
 	exists, err := s.employeeRepository.EmployeeExistById(ctx, id)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return errEmployeeDoesNotExists
+		return model.NewNotAuthorizedError(op, errEmployeeDoesNotExists)
 	}
 
 	return nil

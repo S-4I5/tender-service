@@ -8,7 +8,6 @@ import (
 type CreateTenderDto struct {
 	Name            string             `json:"name" validate:"required"`
 	Description     string             `json:"description" validate:"required"`
-	Status          tender.Status      `json:"status" validate:"required"`
 	ServiceType     tender.ServiceType `json:"serviceType" validate:"required"`
 	OrganizationId  uuid.UUID          `json:"organizationId" validate:"required"`
 	CreatorUsername string             `json:"creatorUsername" validate:"required"`

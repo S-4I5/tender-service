@@ -1,0 +1,37 @@
+[
+  {
+    "name": "1",
+    "description": "1",
+    "status": "Published",
+    "serviceType": "Delivery",
+    "version": 1
+  },
+  {
+    "name": "2",
+    "description": "2",
+    "status": "Published",
+    "serviceType": "Delivery",
+    "version": 1
+  },
+  {
+    "name": "3",
+    "description": "3",
+    "status": "Published",
+    "serviceType": "Construction",
+    "version": 1
+  },
+  {
+    "name": "4",
+    "description": "4",
+    "status": "Published",
+    "serviceType": "Construction",
+    "version": 1
+  },
+  {
+    "name": "5",
+    "description": "5",
+    "status": "Published",
+    "serviceType": "Manufacture",
+    "version": 1
+  }
+]

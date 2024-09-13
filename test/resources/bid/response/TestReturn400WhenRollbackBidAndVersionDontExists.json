@@ -1,0 +1,3 @@
+{
+  "reason": "bid_service.rollback_bid:bad_request:given bid version dont exists"
+}

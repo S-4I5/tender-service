@@ -1,0 +1,3 @@
+{
+  "reason": "bid_service.update_bid_status:bad_request:given status cannot be set by bid owner"
+}

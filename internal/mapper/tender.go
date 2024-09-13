@@ -9,7 +9,7 @@ func CreateTenderDtoToTender(dto dto.CreateTenderDto) tender.Tender {
 	return tender.Tender{
 		Name:            dto.Name,
 		Description:     dto.Description,
-		Status:          dto.Status,
+		Status:          tender.Created,
 		ServiceType:     dto.ServiceType,
 		Version:         1,
 		OrganizationId:  dto.OrganizationId,

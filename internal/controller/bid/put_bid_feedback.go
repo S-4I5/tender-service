@@ -25,7 +25,7 @@ func (c *controller) PutBidFeedback(ctx context.Context) http.HandlerFunc {
 		}
 
 		bidFeedback := request.URL.Query().Get(bidFeedbackQueryParam)
-		if username == "" {
+		if bidFeedback == "" {
 			c.errHandler.Handler(model.NewBadRequestError(op, errNoBidFeedbackPresented), writer)
 			return
 		}

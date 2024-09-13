@@ -1,0 +1,3 @@
+{
+  "reason": "employee_repository.get_employee_by_username:not_authorized:employee not found"
+}

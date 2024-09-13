@@ -16,6 +16,7 @@ type service struct {
 var (
 	errNotInOrganization    = fmt.Errorf("given user not in given organization")
 	errOrganizationNotFound = fmt.Errorf("organization not found")
+	errEmployeeNotInOrg     = fmt.Errorf("employee not in organization")
 )
 
 func NewOrganizationService(
@@ -37,6 +38,16 @@ func (s *service) ValidateOrganizationExists(ctx context.Context, id uuid.UUID) 
 	exists, err := s.organizationRepository.OrganizationExistById(ctx, id)
 	if !exists {
 		return model.NewNotFoundError(op, errOrganizationNotFound)
+	}
+	return err
+}
+
+func (s *service) ValidateEmployeeInAnyOrganization(ctx context.Context, userId uuid.UUID) error {
+	op := "organization_service.validate_employee_is_is_any_organization"
+
+	result, err := s.organizationResponsibleRepository.IsEmployeeInAnyOrganization(ctx, userId)
+	if !result {
+		return model.NewForbiddenError(op, errEmployeeNotInOrg)
 	}
 	return err
 }

@@ -18,13 +18,15 @@ const (
 	Created   Status = "Created"
 	Published Status = "Published"
 	Canceled  Status = "Canceled"
-	Approved  Status = "Approved"
-	Rejected  Status = "Rejected"
 )
 
-func (b *Bid) IsVisible() bool {
-	return b.Status == Published || b.Status == Approved || b.Status == Rejected
-}
+type Decision string
+
+const (
+	Approved Decision = "Approved"
+	Rejected Decision = "Rejected"
+	None     Decision = "None"
+)
 
 func IsSelectableByOwner(status Status) bool {
 	return status == Created || status == Published || status == Canceled
@@ -40,4 +42,5 @@ type Bid struct {
 	AuthorId    uuid.UUID
 	Version     int
 	CreatedAt   time.Time
+	Decision    Decision
 }

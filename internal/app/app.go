@@ -98,19 +98,11 @@ func (a *App) Stop() error {
 }
 
 func (a *App) runMigrationsForPostgres(_ context.Context) error {
-
-	//conn := fmt.Sprintf("postgres://%s:%s@%s/%s",
-	//	a.provider.config.Postgres.Username,
-	//	a.provider.config.Postgres.Password,
-	//	a.provider.config.Postgres.Host+":"+a.provider.config.Postgres.Port,
-	//	a.provider.config.Postgres.Database,
-	//)
-
 	log.Println("running migrations in:", a.provider.config.Postgres.MigrationsDir)
 
 	conn := fmt.Sprintf(a.provider.config.Postgres.Conn)
 
-	dsn := flag.String("dsn", conn, "PostgreSQL mock source name")
+	dsn := flag.String("dsn", conn, "PostgreSQL")
 
 	sql, err := goose.OpenDBWithDriver("postgres", *dsn)
 	if err != nil {

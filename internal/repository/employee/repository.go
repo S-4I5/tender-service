@@ -48,7 +48,7 @@ func (r *repository) GetEmployeeByUsername(ctx context.Context, username string)
 
 	result, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.Employee])
 	if err != nil {
-		return entity.Employee{}, model2.NewNotFoundError(op, errEmployeeNotFound)
+		return entity.Employee{}, model2.NewNotAuthorizedError(op, errEmployeeNotFound)
 	}
 
 	return model.DbEmployeeToEmployee(result), nil
@@ -75,6 +75,8 @@ func (r *repository) EmployeeExistByUsername(ctx context.Context, username strin
 	if err != nil {
 		return false, err
 	}
+
+	rows.Close()
 
 	return result, nil
 }
@@ -123,6 +125,8 @@ func (r *repository) EmployeeExistById(ctx context.Context, id uuid.UUID) (bool,
 	if err != nil {
 		return false, err
 	}
+
+	rows.Close()
 
 	return result, nil
 }

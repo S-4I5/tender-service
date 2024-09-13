@@ -17,6 +17,7 @@ import (
 	"tender-service/internal/app"
 	"tender-service/internal/config"
 	"tender-service/internal/repository"
+	"testing"
 	"time"
 	"unsafe"
 )
@@ -26,11 +27,18 @@ const typeJson = "application/json"
 type ApiTestSuite struct {
 	suite.SetupAllSuite
 	suite.Suite
-	container        *postgres.PostgresContainer
-	app              *app.App
-	pool             *pgxpool.Pool
-	host             string
-	tenderRepository repository.TenderRepository
+	container          *postgres.PostgresContainer
+	app                *app.App
+	pool               *pgxpool.Pool
+	host               string
+	tenderRepository   repository.TenderRepository
+	bidRepository      repository.BidRepository
+	decisionRepository repository.DecisionRepository
+	feedbackRepository repository.FeedbackRepository
+}
+
+func TestTenderController(t *testing.T) {
+	suite.Run(t, new(ApiTestSuite))
 }
 
 func (s *ApiTestSuite) SetupSuite() {
@@ -91,9 +99,18 @@ func (s *ApiTestSuite) SetupSuite() {
 	v := reflect.ValueOf(s.app).Elem()
 	providerField := v.FieldByName("provider")
 	providerValue := reflect.NewAt(providerField.Type(), unsafe.Pointer(providerField.UnsafeAddr())).Elem()
+
 	tenderRepoField := providerValue.Elem().FieldByName("tenderRepository")
 	s.tenderRepository = reflect.NewAt(tenderRepoField.Type(), unsafe.Pointer(tenderRepoField.UnsafeAddr())).Elem().Interface().(repository.TenderRepository)
 
+	bidRepoField := providerValue.Elem().FieldByName("bidRepository")
+	s.bidRepository = reflect.NewAt(bidRepoField.Type(), unsafe.Pointer(bidRepoField.UnsafeAddr())).Elem().Interface().(repository.BidRepository)
+
+	feedbackRepoField := providerValue.Elem().FieldByName("feedbackRepository")
+	s.feedbackRepository = reflect.NewAt(feedbackRepoField.Type(), unsafe.Pointer(feedbackRepoField.UnsafeAddr())).Elem().Interface().(repository.FeedbackRepository)
+
+	decisionRepoField := providerValue.Elem().FieldByName("decisionRepository")
+	s.decisionRepository = reflect.NewAt(decisionRepoField.Type(), unsafe.Pointer(decisionRepoField.UnsafeAddr())).Elem().Interface().(repository.DecisionRepository)
 }
 
 func (s *ApiTestSuite) TearDownSuite() {
@@ -105,13 +122,13 @@ func (s *ApiTestSuite) TearDownSuite() {
 func (s *ApiTestSuite) BeforeTest(suiteName, testName string) {
 	log.Println("clear")
 	_, _ = s.pool.Exec(context.Background(),
-		"TRUNCATE employee, organization, organization_responsible, tender, tender_version, bid, bid_version, decisions, feedback;")
+		"TRUNCATE employee, organization, organization_responsible, tender, tender_version, bid, bid_version, decision, feedback;")
 }
 
 func (s *ApiTestSuite) SetupSubTest() {
 	log.Println("clear sub")
 	_, _ = s.pool.Exec(context.Background(),
-		"TRUNCATE employee, organization, organization_responsible, tender, tender_version, bid, bid_version, decisions, feedback;")
+		"TRUNCATE employee, organization, organization_responsible, tender, tender_version, bid, bid_version, decision, feedback;")
 }
 
 func (s *ApiTestSuite) createEmployeeInOrg(username string, orgId uuid.UUID) uuid.UUID {

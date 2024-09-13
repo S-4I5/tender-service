@@ -24,6 +24,33 @@ func NewOrganizationResponsibleRepository(pool *pgxpool.Pool) *repository {
 	return &repository{pool: pool}
 }
 
+func (r *repository) IsEmployeeInAnyOrganization(ctx context.Context, userId uuid.UUID) (bool, error) {
+	builder := squirrel.Select("1").PlaceholderFormat(squirrel.Dollar).
+		Prefix("SELECT EXISTS (").From(tableName).Where(squirrel.Eq{"user_id": userId.String()}).Suffix(")")
+
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := r.pool.Query(ctx, sql, args...)
+	if err != nil {
+		return false, err
+	}
+
+	rows.Next()
+
+	var result bool
+	err = rows.Scan(&result)
+	if err != nil {
+		return false, err
+	}
+
+	rows.Close()
+
+	return result, nil
+}
+
 func (r *repository) UsersHasSimilarOrganization(ctx context.Context, userId uuid.UUID, username string) (bool, error) {
 	// squirrel does not support nested queries :_(
 	sql := "SELECT EXISTS ( " +

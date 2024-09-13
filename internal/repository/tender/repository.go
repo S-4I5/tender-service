@@ -56,7 +56,7 @@ func (r *repository) SaveTender(ctx context.Context, ten tender.Tender) (tender.
 
 	tenderBuilder := squirrel.Insert(tenderTableName).PlaceholderFormat(squirrel.Dollar).
 		Columns(statusColumnName, organizationIdColumnName, creatorUsernameColumnName).
-		Values(ten.Status, ten.OrganizationId, ten.CreatorUsername).
+		Values(ten.Status, ten.OrganizationId.String(), ten.CreatorUsername).
 		Suffix(returningAllSuffix)
 
 	sql, args, err := tenderBuilder.ToSql()
@@ -71,13 +71,12 @@ func (r *repository) SaveTender(ctx context.Context, ten tender.Tender) (tender.
 
 	savedTender, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.Tender])
 	if err != nil {
-		fmt.Println("x1")
 		return tender.Tender{}, err
 	}
 
 	versionBuilder := squirrel.Insert(versionTableName).PlaceholderFormat(squirrel.Dollar).
 		Columns(tenderIdColumnName, serviceTypeColumnName, nameColumnName, descriptionColumnName, versionColumnName).
-		Values(savedTender.Id, ten.ServiceType, ten.Name, ten.Description, 1).
+		Values(savedTender.Id.String(), ten.ServiceType, ten.Name, ten.Description, 1).
 		Suffix(returningAllSuffix)
 
 	sql, args, err = versionBuilder.ToSql()
@@ -97,7 +96,7 @@ func (r *repository) SaveTender(ctx context.Context, ten tender.Tender) (tender.
 
 	setTenderVersion := squirrel.Update(tenderTableName).PlaceholderFormat(squirrel.Dollar).
 		Set(tenderVersionIdColumnName, savedVersion.Id).
-		Where(squirrel.Eq{idColumnName: savedTender.Id})
+		Where(squirrel.Eq{idColumnName: savedTender.Id.String()})
 
 	sql, args, err = setTenderVersion.ToSql()
 	if err != nil {

@@ -14,7 +14,7 @@ type repository struct {
 }
 
 const (
-	tableName          = "decisions"
+	tableName          = "decision"
 	verdictColumnName  = "verdict"
 	usernameColumnName = "username"
 	bidIdColumnName    = "bid_id"

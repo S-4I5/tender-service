@@ -30,9 +30,10 @@ const (
 	AuthorIdColumnName     = "author_id"
 	versionColumnName      = "version"
 	bidVersionIdColumnName = "bid_version_id"
+	decisionColumnName     = "decision"
 	returningAllSuffix     = "RETURNING *"
 	bidAndVersionJoin      = "bid_version ON bid.bid_version_id = bid_version.id"
-	selectBidSum           = "bid.id, bid_version.name, bid_version.description, bid.status, bid.tender_id, bid.author_type, bid.author_id, bid_version.version, bid.created_at"
+	selectBidSum           = "bid.id, bid_version.name, bid_version.description, bid.status, bid.tender_id, bid.author_type, bid.author_id, bid_version.version, bid.created_at, bid.decision"
 )
 
 func NewBidRepository(pool *pgxpool.Pool) *repository {
@@ -48,8 +49,8 @@ func (r *repository) SaveBid(ctx context.Context, b bid.Bid) (bid.Bid, error) {
 	defer tx.Rollback(ctx)
 
 	bidBuilder := squirrel.Insert(bidTableName).PlaceholderFormat(squirrel.Dollar).
-		Columns(statusColumnName, tenderIdColumnName, AuthorIdColumnName, authorTypeColumnName).
-		Values(bid.Created, b.TenderId.String(), b.AuthorId.String(), b.AuthorType).
+		Columns(statusColumnName, tenderIdColumnName, AuthorIdColumnName, authorTypeColumnName, decisionColumnName).
+		Values(bid.Created, b.TenderId.String(), b.AuthorId.String(), b.AuthorType, bid.None).
 		Suffix(returningAllSuffix)
 
 	sql, args, err := bidBuilder.ToSql()
@@ -102,6 +103,7 @@ func (r *repository) SaveBid(ctx context.Context, b bid.Bid) (bid.Bid, error) {
 		return bid.Bid{}, err
 	}
 
+	rows.Close()
 	//savedBid.TenderVersionId = sql2.NullInt32{
 	//	Int32: int32(savedVersion.Id),
 	//	Valid: true,
@@ -176,6 +178,27 @@ func (r *repository) GetBidList(ctx context.Context, page util.Page, tenderId uu
 	}
 
 	return model.BidSumListToBidList(sums), nil
+}
+
+func (r *repository) UpdateBidDecision(ctx context.Context, id uuid.UUID, dec bid.Decision) (bid.Bid, error) {
+	updateBuilder := squirrel.Update(bidTableName).PlaceholderFormat(squirrel.Dollar).Set(decisionColumnName, dec).
+		Where(squirrel.Eq{idColumnName: id.String()})
+
+	sql, args, err := updateBuilder.ToSql()
+	if err != nil {
+		return bid.Bid{}, err
+	}
+
+	fmt.Println("sql:" + sql)
+
+	rows, err := r.pool.Query(ctx, sql, args...)
+	if err != nil {
+		return bid.Bid{}, err
+	}
+
+	rows.Close()
+
+	return r.GetBidById(ctx, id)
 }
 
 func (r *repository) UpdateBidStatus(ctx context.Context, id uuid.UUID, stat bid.Status) (bid.Bid, error) {

@@ -4,22 +4,19 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"tender-service/internal/model/dto"
 	"tender-service/internal/model/entity/tender"
 	"tender-service/test"
-	"testing"
 )
 
 func (s *ApiTestSuite) TestCreateTender() {
 	orgId := s.createOrganization()
-	_ = s.createEmployeeInOrg("test", orgId)
+	s.createEmployeeInOrg("test", orgId)
 
 	given := dto.CreateTenderDto{
 		Name:            "1",
 		Description:     "1",
-		Status:          "Created",
 		ServiceType:     tender.Construction,
 		OrganizationId:  orgId,
 		CreatorUsername: "test",
@@ -36,13 +33,12 @@ func (s *ApiTestSuite) TestCreateTender() {
 }
 
 func (s *ApiTestSuite) TestReturn404WhenCreateTenderAndGroupDontExists() {
-	_ = s.createEmployee("test")
+	s.createEmployee("test")
 	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
 
 	given := dto.CreateTenderDto{
 		Name:            "1",
 		Description:     "1",
-		Status:          "Created",
 		ServiceType:     tender.Construction,
 		OrganizationId:  id,
 		CreatorUsername: "test",
@@ -64,7 +60,6 @@ func (s *ApiTestSuite) TestReturn401WhenCreateTenderAndEmployeeDontExists() {
 	given := dto.CreateTenderDto{
 		Name:            "1",
 		Description:     "1",
-		Status:          "Created",
 		ServiceType:     tender.Construction,
 		OrganizationId:  id,
 		CreatorUsername: "test",
@@ -82,12 +77,11 @@ func (s *ApiTestSuite) TestReturn401WhenCreateTenderAndEmployeeDontExists() {
 
 func (s *ApiTestSuite) TestReturn403WhenCreateTenderAndEmployeeNotInOrganization() {
 	orgId := s.createOrganization()
-	_ = s.createEmployee("test")
+	s.createEmployee("test")
 
 	given := dto.CreateTenderDto{
 		Name:            "1",
 		Description:     "1",
-		Status:          "Created",
 		ServiceType:     tender.Construction,
 		OrganizationId:  orgId,
 		CreatorUsername: "test",
@@ -105,7 +99,8 @@ func (s *ApiTestSuite) TestReturn403WhenCreateTenderAndEmployeeNotInOrganization
 
 func (s *ApiTestSuite) TestGetTendersList() {
 	ctx := context.Background()
-	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
+	id := s.createOrganization()
+	s.createEmployee("aboba")
 
 	s.tenderRepository.SaveTender(ctx, tender.Tender{
 		Name:            "1",
@@ -144,6 +139,85 @@ func (s *ApiTestSuite) TestGetTendersList() {
 	test.ValidateJsonResponse(s.T(), actual, expected, 200)
 }
 
+func (s *ApiTestSuite) TestGetTendersListWithPagination() {
+	testCases := []struct {
+		name  string
+		param string
+	}{
+		{name: "0-1", param: "offset=0&limit=1"},
+		{name: "1-2", param: "offset=1&limit=2"},
+		{name: "Default", param: ""},
+		{name: "0-100", param: "offset=0&limit=100"},
+	}
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			ctx := context.Background()
+			id := s.createOrganization()
+			s.createEmployee("aboba")
+
+			s.tenderRepository.SaveTender(ctx, tender.Tender{
+				Name:            "1",
+				Description:     "1",
+				Status:          "Published",
+				ServiceType:     tender.Delivery,
+				OrganizationId:  id,
+				CreatorUsername: "aboba",
+			})
+			s.tenderRepository.SaveTender(ctx, tender.Tender{
+				Name:            "2",
+				Description:     "2",
+				Status:          "Published",
+				ServiceType:     tender.Delivery,
+				OrganizationId:  id,
+				CreatorUsername: "aboba",
+			})
+
+			s.tenderRepository.SaveTender(ctx, tender.Tender{
+				Name:            "3",
+				Description:     "3",
+				Status:          "Published",
+				ServiceType:     tender.Construction,
+				OrganizationId:  id,
+				CreatorUsername: "aboba",
+			})
+			s.tenderRepository.SaveTender(ctx, tender.Tender{
+				Name:            "4",
+				Description:     "4",
+				Status:          "Published",
+				ServiceType:     tender.Construction,
+				OrganizationId:  id,
+				CreatorUsername: "aboba",
+			})
+
+			s.tenderRepository.SaveTender(ctx, tender.Tender{
+				Name:            "5",
+				Description:     "5",
+				Status:          "Published",
+				ServiceType:     tender.Manufacture,
+				OrganizationId:  id,
+				CreatorUsername: "aboba",
+			})
+			s.tenderRepository.SaveTender(ctx, tender.Tender{
+				Name:            "6",
+				Description:     "6",
+				Status:          "Published",
+				ServiceType:     tender.Manufacture,
+				OrganizationId:  id,
+				CreatorUsername: "aboba",
+			})
+
+			actual, err := http.Get(s.host + fmt.Sprintf("/tenders?%s", tc.param))
+			if err != nil {
+				s.T().Fatalf("Failed to send request: %v", err)
+			}
+			defer actual.Body.Close()
+
+			expected := test.ReadJson("/tender/response/TestGetTendersListWithPagination/" + tc.name)
+			test.ValidateJsonResponse(s.T(), actual, expected, 200)
+		})
+	}
+}
+
 func (s *ApiTestSuite) TestGetTendersListWithIncorrectFilters() {
 	actual, err := http.Get(s.host + fmt.Sprintf("/tenders?service_type=%s", "something"))
 	if err != nil {
@@ -171,8 +245,8 @@ func (s *ApiTestSuite) TestGetTendersListWithFilters() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			ctx := context.Background()
-
-			id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
+			id := s.createOrganization()
+			s.createEmployee("aboba")
 
 			s.tenderRepository.SaveTender(ctx, tender.Tender{
 				Name:            "1",
@@ -245,7 +319,7 @@ func (s *ApiTestSuite) TestGetTendersListWithFilters() {
 	}
 }
 
-func (s *ApiTestSuite) TestGetTenderStatusSubTest() {
+func (s *ApiTestSuite) TestGetTenderStatus() {
 	testCases := []struct {
 		name     string
 		userName string
@@ -258,8 +332,8 @@ func (s *ApiTestSuite) TestGetTenderStatusSubTest() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			orgId := s.createOrganization()
-			_ = s.createEmployeeInOrg("test", orgId)
-			_ = s.createEmployeeInOrg("test2", orgId)
+			s.createEmployeeInOrg("test", orgId)
+			s.createEmployeeInOrg("test2", orgId)
 			s.createEmployee("other")
 
 			tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
@@ -284,6 +358,7 @@ func (s *ApiTestSuite) TestGetTenderStatusSubTest() {
 
 func (s *ApiTestSuite) TestReturn401WhenGetTenderStatusAndEmployeeDontExists() {
 	orgId := s.createOrganization()
+	s.createEmployeeInOrg("test", orgId)
 	tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 		Name:            "1",
 		Description:     "2",
@@ -305,8 +380,8 @@ func (s *ApiTestSuite) TestReturn401WhenGetTenderStatusAndEmployeeDontExists() {
 
 func (s *ApiTestSuite) TestReturn403WhenGetTenderStatusAndEmployeeNotInGroup() {
 	orgId := s.createOrganization()
-	_ = s.createEmployeeInOrg("test", orgId)
-	_ = s.createEmployee("test2")
+	s.createEmployeeInOrg("test", orgId)
+	s.createEmployee("test2")
 
 	tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 		Name:            "1",
@@ -328,7 +403,7 @@ func (s *ApiTestSuite) TestReturn403WhenGetTenderStatusAndEmployeeNotInGroup() {
 }
 
 func (s *ApiTestSuite) TestReturn404WhenGetTenderStatusAndTenderDoesNotExists() {
-	_ = s.createEmployee("test2")
+	s.createEmployee("test2")
 	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
 
 	actual, err := http.Get(s.host + fmt.Sprintf("/tenders/%s/status?username=%s", id.String(), "test2"))
@@ -343,7 +418,7 @@ func (s *ApiTestSuite) TestReturn404WhenGetTenderStatusAndTenderDoesNotExists() 
 
 func (s *ApiTestSuite) TestGetMyTenders() {
 	orgId := s.createOrganization()
-	_ = s.createEmployeeInOrg("test", orgId)
+	s.createEmployeeInOrg("test", orgId)
 
 	s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 		Name:            "1",
@@ -404,8 +479,8 @@ func (s *ApiTestSuite) TestEditTender() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			orgId := s.createOrganization()
-			_ = s.createEmployeeInOrg("test", orgId)
-			_ = s.createEmployee("other")
+			s.createEmployeeInOrg("test", orgId)
+			s.createEmployee("other")
 
 			tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 				Name:            "1",
@@ -435,7 +510,7 @@ func (s *ApiTestSuite) TestEditTender() {
 }
 
 func (s *ApiTestSuite) TestReturn404WhenEditTenderAndTenderDontExists() {
-	_ = s.createEmployee("test")
+	s.createEmployee("test")
 	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
 
 	given := dto.UpdateTenderDto{
@@ -467,8 +542,8 @@ func (s *ApiTestSuite) TestUpdateTenderStatus() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			orgId := s.createOrganization()
-			_ = s.createEmployeeInOrg("test", orgId)
-			_ = s.createEmployee("other")
+			s.createEmployeeInOrg("test", orgId)
+			s.createEmployee("other")
 
 			tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 				Name:            "1",
@@ -492,7 +567,7 @@ func (s *ApiTestSuite) TestUpdateTenderStatus() {
 }
 
 func (s *ApiTestSuite) TestReturn404WhenUpdateTenderStatusAndTenderDontExists() {
-	_ = s.createEmployee("test")
+	s.createEmployee("test")
 	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
 
 	actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/status?username=%s&status=%s", id.String(), "test", tender.Created), nil)
@@ -506,7 +581,7 @@ func (s *ApiTestSuite) TestReturn404WhenUpdateTenderStatusAndTenderDontExists() 
 }
 
 func (s *ApiTestSuite) TestReturn400WhenUpdateTenderStatusAndIncorrectStatus() {
-	_ = s.createEmployee("test")
+	s.createEmployee("test")
 	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
 
 	actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/status?username=%s&status=%s", id.String(), "test", "something"), nil)
@@ -534,8 +609,8 @@ func (s *ApiTestSuite) TestRollbackTender() {
 			ctx := context.Background()
 
 			orgId := s.createOrganization()
-			_ = s.createEmployeeInOrg("test", orgId)
-			_ = s.createEmployee("other")
+			s.createEmployeeInOrg("test", orgId)
+			s.createEmployee("other")
 
 			tend, _ := s.tenderRepository.SaveTender(ctx, tender.Tender{
 				Name:            "old",
@@ -561,7 +636,7 @@ func (s *ApiTestSuite) TestRollbackTender() {
 }
 
 func (s *ApiTestSuite) TestReturn404WhenRollbackTenderWhenTenderDontExists() {
-	_ = s.createEmployee("test")
+	s.createEmployee("test")
 	id, _ := uuid.Parse("12d5ca77-d755-49c4-a5ab-1502966ccde0")
 
 	actual, err := test.HttpPut(s.host+fmt.Sprintf("/tenders/%s/rollback/1?username=%s", id, "test"), nil)
@@ -576,7 +651,7 @@ func (s *ApiTestSuite) TestReturn404WhenRollbackTenderWhenTenderDontExists() {
 
 func (s *ApiTestSuite) TestReturn400WhenRollbackTenderWhenTenderVersionDontExists() {
 	orgId := s.createOrganization()
-	_ = s.createEmployeeInOrg("test", orgId)
+	s.createEmployeeInOrg("test", orgId)
 
 	tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 		Name:            "old",
@@ -595,8 +670,4 @@ func (s *ApiTestSuite) TestReturn400WhenRollbackTenderWhenTenderVersionDontExist
 
 	expected := test.ReadJson("/tender/response/TestReturn400WhenRollbackTenderWhenTenderVersionDontExists")
 	test.ValidateJsonResponse(s.T(), actual, expected, 400)
-}
-
-func TestTenderController(t *testing.T) {
-	suite.Run(t, new(ApiTestSuite))
 }

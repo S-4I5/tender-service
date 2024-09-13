@@ -9,6 +9,7 @@ import (
 type Bid struct {
 	Id           uuid.UUID
 	Status       string
+	Decision     bid.Decision
 	TenderId     uuid.UUID
 	AuthorType   string
 	BidVersionId uuid.UUID
@@ -28,6 +29,7 @@ type BidSum struct {
 	Id          uuid.UUID
 	Name        string
 	Description string
+	Decision    bid.Decision
 	Version     int
 	Status      string
 	TenderId    uuid.UUID
@@ -41,6 +43,7 @@ func MergeBidAndVersionToBid(v BidVersion, b Bid) bid.Bid {
 		Id:          b.Id,
 		Name:        v.Name,
 		Description: v.Description,
+		Decision:    b.Decision,
 		Status:      bid.Status(b.Status),
 		TenderId:    b.TenderId,
 		AuthorType:  bid.AuthorType(b.AuthorType),
@@ -54,6 +57,7 @@ func BidSumToBid(sum BidSum) bid.Bid {
 	return bid.Bid{
 		Id:          sum.Id,
 		Name:        sum.Name,
+		Decision:    sum.Decision,
 		Description: sum.Description,
 		Status:      bid.Status(sum.Status),
 		TenderId:    sum.TenderId,

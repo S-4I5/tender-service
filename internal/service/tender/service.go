@@ -52,7 +52,7 @@ func (s *service) GetTenders(ctx context.Context, page util.Page, serviceTypes [
 }
 
 func (s *service) CreateNewTender(ctx context.Context, tenderDto dto.CreateTenderDto) (dto.TenderDto, error) {
-	if err := s.employeeService.ValidateEmployeeExists(ctx, tenderDto.CreatorUsername); err != nil {
+	if err := s.employeeService.ValidateEmployeeExistsByUsername(ctx, tenderDto.CreatorUsername); err != nil {
 		return dto.TenderDto{}, err
 	}
 
@@ -73,7 +73,7 @@ func (s *service) CreateNewTender(ctx context.Context, tenderDto dto.CreateTende
 }
 
 func (s *service) GetUserTenders(ctx context.Context, page util.Page, username string) ([]dto.TenderDto, error) {
-	if err := s.employeeService.ValidateEmployeeExists(ctx, username); err != nil {
+	if err := s.employeeService.ValidateEmployeeExistsByUsername(ctx, username); err != nil {
 		return nil, err
 	}
 
@@ -165,7 +165,7 @@ func (s *service) ValidateEmployeeRightsOnTender(ctx context.Context, tenderId u
 		return err
 	}
 
-	if err = s.employeeService.ValidateEmployeeExists(ctx, username); err != nil {
+	if err = s.employeeService.ValidateEmployeeExistsByUsername(ctx, username); err != nil {
 		return err
 	}
 

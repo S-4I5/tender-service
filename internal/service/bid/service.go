@@ -29,6 +29,10 @@ var (
 	errStatusCannotBeSelectedByOwner = fmt.Errorf("given status cannot be set by bid owner")
 	errCannotVoteOnBid               = fmt.Errorf("cannot vote on given bid")
 	errTenderAlreadyClosed           = fmt.Errorf("tender already closed")
+	errBidVersionDontExists          = fmt.Errorf("given bid version dont exists")
+	errEmployeeNotBidAuhtor          = fmt.Errorf("employee not auuthor of bid")
+	errEmployeeNotInBidOrg           = fmt.Errorf("employee not in bid org")
+	errNoReviewsFound                = fmt.Errorf("no reviews found")
 )
 
 func NewBidService(
@@ -58,9 +62,15 @@ func (s *service) CreateNewBid(ctx context.Context, createDto dto.CreateBidDto) 
 		return dto.BidDto{}, err
 	}
 
-	//newBid := mapper.CreateBidDtoToBid(createDto)
+	newBid := mapper.CreateBidDtoToBid(createDto)
 
-	saved, err := s.bidRepository.SaveBid(ctx, mapper.CreateBidDtoToBid(createDto))
+	if newBid.AuthorType == bid.AuthorOrganization {
+		if err := s.organizationService.ValidateEmployeeInAnyOrganization(ctx, createDto.AuthorId); err != nil {
+			return dto.BidDto{}, err
+		}
+	}
+
+	saved, err := s.bidRepository.SaveBid(ctx, newBid)
 	if err != nil {
 		return dto.BidDto{}, err
 	}
@@ -103,8 +113,8 @@ func (s *service) GetBidStatus(ctx context.Context, bidId uuid.UUID, username st
 		return "", err
 	}
 
-	if entity.IsVisible() {
-		return entity.Status, nil
+	if entity.Status == bid.Published {
+		return bid.Published, nil
 	}
 
 	if err = s.validateEmployeeRightsOnBid(ctx, bidId, username); err != nil {
@@ -115,13 +125,14 @@ func (s *service) GetBidStatus(ctx context.Context, bidId uuid.UUID, username st
 }
 
 func (s *service) UpdateBidStatus(ctx context.Context, bidId uuid.UUID, username string, status bid.Status) (dto.BidDto, error) {
+	op := "bid_service.update_bid_status"
 	err := s.validateEmployeeRightsOnBid(ctx, bidId, username)
 	if err != nil {
 		return dto.BidDto{}, err
 	}
 
 	if !bid.IsSelectableByOwner(status) {
-		return dto.BidDto{}, errStatusCannotBeSelectedByOwner
+		return dto.BidDto{}, model.NewBadRequestError(op, errStatusCannotBeSelectedByOwner)
 	}
 
 	updated, err := s.bidRepository.UpdateBidStatus(ctx, bidId, status)
@@ -153,8 +164,7 @@ func (s *service) SubmitBidDecision(ctx context.Context, bidId uuid.UUID, userna
 		return dto.BidDto{}, err
 	}
 
-	if curBid.Status != bid.Published {
-		//TODO for each status
+	if curBid.Status != bid.Published || curBid.Decision != bid.None {
 		return dto.BidDto{}, model.NewBadRequestError(op, errCannotVoteOnBid)
 	}
 
@@ -164,21 +174,17 @@ func (s *service) SubmitBidDecision(ctx context.Context, bidId uuid.UUID, userna
 	}
 
 	if ten.Status != tender.Published {
-		return dto.BidDto{}, errTenderAlreadyClosed
+		return dto.BidDto{}, model.NewBadRequestError(op, errTenderAlreadyClosed)
 	}
 
-	fmt.Println("XD" + verdict)
-
 	if verdict == decision.Rejected {
-		updatedBid, err := s.bidRepository.UpdateBidStatus(ctx, curBid.Id, bid.Rejected)
+		updatedBid, err := s.bidRepository.UpdateBidDecision(ctx, curBid.Id, bid.Rejected) //-<<<<<<
 		if err != nil {
 			return dto.BidDto{}, err
 		}
 		fmt.Println("gb" + verdict)
 		return mapper.BidToBidDto(updatedBid), nil
 	}
-
-	fmt.Println("agg" + verdict)
 
 	_, err = s.decisionRepository.SaveDecision(ctx, decision.Decision{
 		Verdict:  verdict,
@@ -203,7 +209,7 @@ func (s *service) SubmitBidDecision(ctx context.Context, bidId uuid.UUID, userna
 		return mapper.BidToBidDto(curBid), nil
 	}
 
-	updated, err := s.bidRepository.UpdateBidStatus(ctx, bidId, bid.Approved)
+	updated, err := s.bidRepository.UpdateBidDecision(ctx, bidId, bid.Approved) //-<<<<<<
 	if err != nil {
 		return dto.BidDto{}, err
 	}
@@ -235,7 +241,17 @@ func (s *service) CreateBidFeedback(ctx context.Context, bidId uuid.UUID, bidFee
 }
 
 func (s *service) RollbackBid(ctx context.Context, bidId uuid.UUID, username string, version int) (dto.BidDto, error) {
-	if err := s.validateEmployeeRightsOnBid(ctx, bidId, username); err != nil {
+	op := "bid_service.rollback_bid"
+	curBid, err := s.bidRepository.GetBidById(ctx, bidId)
+	if err != nil {
+		return dto.BidDto{}, err
+	}
+
+	if curBid.Version < version {
+		return dto.BidDto{}, model.NewBadRequestError(op, errBidVersionDontExists)
+	}
+
+	if err = s.validateEmployeeRightsOnBid(ctx, bidId, username); err != nil {
 		return dto.BidDto{}, err
 	}
 
@@ -248,6 +264,7 @@ func (s *service) RollbackBid(ctx context.Context, bidId uuid.UUID, username str
 }
 
 func (s *service) GetBidReviews(ctx context.Context, page util.Page, tenderId uuid.UUID, authorUsername, requesterUsername string) ([]dto.FeedbackDto, error) {
+	op := "bid_service.get_bid_reviews"
 	if err := s.tenderService.ValidateEmployeeRightsOnTender(ctx, tenderId, requesterUsername); err != nil {
 		return nil, err
 	}
@@ -260,6 +277,9 @@ func (s *service) GetBidReviews(ctx context.Context, page util.Page, tenderId uu
 	feedback, err := s.feedbackRepository.GetFeedbackListForGroup(ctx, tenderId, author.Id)
 	if err != nil {
 		return nil, err
+	}
+	if len(feedback) == 0 {
+		return nil, model.NewNotFoundError(op, errNoReviewsFound)
 	}
 
 	return mapper.FeedbackListToFeedBackDtoList(feedback), nil
@@ -278,6 +298,8 @@ func (s *service) validateEmployeeRightsOnTenderByBid(ctx context.Context, bidId
 }
 
 func (s *service) validateEmployeeRightsOnBid(ctx context.Context, bidId uuid.UUID, username string) error {
+	op := "bid_service.validate_employee_rights_on_bid"
+
 	entity, err := s.bidRepository.GetBidById(ctx, bidId)
 	if err != nil {
 		return err
@@ -289,7 +311,7 @@ func (s *service) validateEmployeeRightsOnBid(ctx context.Context, bidId uuid.UU
 			return err
 		}
 		if entity.AuthorId != curUser.Id {
-			return fmt.Errorf("not owner")
+			return model.NewForbiddenError(op, errEmployeeNotBidAuhtor)
 		}
 	} else {
 		ok, err := s.organizationService.UsersHasSimilarOrganization(ctx, entity.AuthorId, username)
@@ -297,7 +319,7 @@ func (s *service) validateEmployeeRightsOnBid(ctx context.Context, bidId uuid.UU
 			return err
 		}
 		if !ok {
-			return fmt.Errorf("no perm")
+			return model.NewForbiddenError(op, errEmployeeNotInBidOrg)
 		}
 	}
 	return nil
