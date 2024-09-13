@@ -78,13 +78,13 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 
 	main := http.NewServeMux()
 
-	main.Handle("/api/", http.StripPrefix("/api", api))
+	main.Handle("/api/", middleware.GetLoggerMiddleware(http.StripPrefix("/api", api)))
 
 	main.HandleFunc("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/docs/openapi.yml"),
 	))
 
-	main.HandleFunc("/docs/openapi.yml", func(w http.ResponseWriter, r *http.Request) {
+	mmain.HandleFunc("/docs/openapi.yml", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./docs/openapi.yml")
 	})
 
@@ -92,7 +92,7 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 
 	a.server = http.Server{
 		Addr:    a.provider.config.Server.Address,
-		Handler: middleware.GetLoggerMiddleware(main),
+		Handler: main,
 	}
 	return nil
 }
