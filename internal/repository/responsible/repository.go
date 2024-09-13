@@ -90,8 +90,6 @@ func (r *repository) IsResponsibleInOrganization(ctx context.Context, username s
 		return false, err
 	}
 
-	//fmt.Println("sql:" + sql)
-
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return false, err

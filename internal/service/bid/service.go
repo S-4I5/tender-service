@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"log"
 	"tender-service/internal/mapper"
 	"tender-service/internal/model"
 	"tender-service/internal/model/dto"
@@ -89,7 +90,7 @@ func (s *service) GetUserBids(ctx context.Context, page util.Page, username stri
 		return nil, err
 	}
 
-	fmt.Println(bids)
+	log.Println(bids)
 
 	return mapper.BidListToBidDtoList(bids), nil
 }

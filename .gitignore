@@ -3,6 +3,8 @@ HELP.md
 /build/
 !gradle/wrapper/gradle-wrapper.jar
 
+docker-compose-psql.yaml
+
 ### STS ###
 .apt_generated
 .classpath

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 	model2 "tender-service/internal/model"
 	"tender-service/internal/model/entity/tender"
 	"tender-service/internal/repository/tender/model"
@@ -134,7 +135,7 @@ func (r *repository) GetTenderById(ctx context.Context, id uuid.UUID) (tender.Te
 		return tender.Tender{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -153,11 +154,11 @@ func (r *repository) GetTenderList(ctx context.Context, page util.Page, serviceT
 	builder := squirrel.Select(selectTenderSum).PlaceholderFormat(squirrel.Dollar).
 		From(tenderTableName).Join(tenderAndVersionJoin)
 
-	if onlyPublished == true {
+	if onlyPublished {
 		builder = builder.Where(squirrel.Eq{statusColumnName: tender.Published})
 	}
 
-	if serviceTypes != nil && len(serviceTypes) > 0 {
+	if len(serviceTypes) > 0 {
 		builder = builder.Where(squirrel.Eq{serviceTypeColumnName: serviceTypes})
 	}
 
@@ -172,7 +173,7 @@ func (r *repository) GetTenderList(ctx context.Context, page util.Page, serviceT
 		return nil, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -197,7 +198,7 @@ func (r *repository) UpdateTenderStatus(ctx context.Context, id uuid.UUID, stat 
 		return tender.Tender{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -244,7 +245,7 @@ func (r *repository) UpdateTender(ctx context.Context, id uuid.UUID, name, descr
 		return tender.Tender{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -265,7 +266,7 @@ func (r *repository) UpdateTender(ctx context.Context, id uuid.UUID, name, descr
 		return tender.Tender{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err = r.pool.Query(ctx, sql, args...)
 	if err != nil {

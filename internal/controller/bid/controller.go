@@ -35,8 +35,6 @@ var (
 	errNoRequesterUsernamePresented = fmt.Errorf("request param requesterUsername is not presented")
 	errNoBidFeedbackPresented       = fmt.Errorf("request param bidFeedback is not presented")
 	errIncorrectBidDecision         = fmt.Errorf("incorrect bid decision")
-	errIncorrectServiceType         = fmt.Errorf("provided incorrect service type")
-	errIncorrectTenderStatus        = fmt.Errorf("incorrect tender status")
 )
 
 func NewBidController(bidService service.BidService, errHandler httperr.ApiErrorHandler) *controller {

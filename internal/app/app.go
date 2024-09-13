@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 	"flag"
-	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
 	"net/http"
 	"tender-service/internal/config"
@@ -80,6 +80,14 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 
 	main.Handle("/api/", http.StripPrefix("/api", api))
 
+	main.HandleFunc("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/docs/openapi.yml"),
+	))
+
+	main.HandleFunc("/docs/openapi.yml", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./docs/openapi.yml")
+	})
+
 	log.Println("starting on:" + a.provider.config.Server.Address)
 
 	a.server = http.Server{
@@ -100,9 +108,7 @@ func (a *App) Stop() error {
 func (a *App) runMigrationsForPostgres(_ context.Context) error {
 	log.Println("running migrations in:", a.provider.config.Postgres.MigrationsDir)
 
-	conn := fmt.Sprintf(a.provider.config.Postgres.Conn)
-
-	dsn := flag.String("dsn", conn, "PostgreSQL")
+	dsn := flag.String("dsn", a.provider.config.Postgres.Conn, "PostgreSQL")
 
 	sql, err := goose.OpenDBWithDriver("postgres", *dsn)
 	if err != nil {

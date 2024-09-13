@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -15,10 +15,10 @@ func GetLoggerMiddleware(next http.Handler) http.Handler {
 		log.Printf("Started %s %s at %s", r.Method, r.URL.Path, start.String())
 
 		if r.Body != nil {
-			bodyBytes, _ := ioutil.ReadAll(r.Body)
+			bodyBytes, _ := io.ReadAll(r.Body)
 			log.Printf("Request Body: %s", string(bodyBytes))
 
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		}
 
 		rw := &responseWriter{w, http.StatusOK, &bytes.Buffer{}}

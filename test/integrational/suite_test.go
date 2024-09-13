@@ -37,7 +37,7 @@ type ApiTestSuite struct {
 	feedbackRepository repository.FeedbackRepository
 }
 
-func TestTenderController(t *testing.T) {
+func TestControllers(t *testing.T) {
 	suite.Run(t, new(ApiTestSuite))
 }
 

@@ -16,7 +16,7 @@ type ServerConfig struct {
 }
 
 type PostgresConfig struct {
-	MigrationsDir string `yaml:"migrations-dir" env:"MIGRATIONS-DIR" env-default:"./migrations/prod"`
+	MigrationsDir string `yaml:"migrations-dir" env:"MIGRATIONS_DIR" env-default:"./migrations/prod"`
 	Conn          string `yaml:"conn" env:"POSTGRES_CONN" env-default:""`
 }
 

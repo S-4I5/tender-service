@@ -3,7 +3,7 @@ package bid
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"tender-service/internal/model"
 	"tender-service/internal/model/entity/decision"
@@ -32,7 +32,7 @@ func (c *controller) PutBidSubmitDecision(ctx context.Context) http.HandlerFunc 
 			return
 		}
 
-		fmt.Println(des)
+		log.Println(des)
 
 		bid, err := c.bidService.SubmitBidDecision(ctx, bidId, username, decision.Verdict(des))
 		if err != nil {

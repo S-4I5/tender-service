@@ -31,6 +31,7 @@ ALTER TABLE tender ADD CONSTRAINT fk_organization_id FOREIGN KEY (organization_i
 ALTER TABLE tender ADD CONSTRAINT fk_creator_username FOREIGN KEY (creator_username) REFERENCES employee(username);
 
 ALTER TABLE tender_version ADD CONSTRAINT fk_tender_id FOREIGN KEY (tender_id) REFERENCES tender(id) ON DELETE CASCADE;-- +goose StatementEnd
+-- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin

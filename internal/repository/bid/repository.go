@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 	model2 "tender-service/internal/model"
 	"tender-service/internal/model/entity/bid"
 	"tender-service/internal/repository/bid/model"
@@ -104,10 +105,6 @@ func (r *repository) SaveBid(ctx context.Context, b bid.Bid) (bid.Bid, error) {
 	}
 
 	rows.Close()
-	//savedBid.TenderVersionId = sql2.NullInt32{
-	//	Int32: int32(savedVersion.Id),
-	//	Valid: true,
-	//}
 
 	err = tx.Commit(ctx)
 	if err != nil {
@@ -150,27 +147,23 @@ func (r *repository) GetBidList(ctx context.Context, page util.Page, tenderId uu
 		builder = builder.Where(squirrel.Eq{tenderIdColumnName: tenderId.String()})
 	}
 
-	fmt.Println(userId.String())
+	log.Println(userId.String())
 
 	if userId != uuid.Nil {
 		builder = builder.Where(squirrel.Eq{"bid" + "." + AuthorIdColumnName: userId.String()})
 	}
-
-	//builder = builder.Offset(uint64(page.Offset)).Limit(uint64(page.Limit))
 
 	sql, args, err := builder.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
-
-	//fmt.Println(rows.Values())
 
 	sums, err := pgx.CollectRows(rows, pgx.RowToStructByName[model.BidSum])
 	if err != nil {
@@ -189,7 +182,7 @@ func (r *repository) UpdateBidDecision(ctx context.Context, id uuid.UUID, dec bi
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -211,7 +204,7 @@ func (r *repository) UpdateBidStatus(ctx context.Context, id uuid.UUID, stat bid
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -253,7 +246,7 @@ func (r *repository) UpdateBid(ctx context.Context, id uuid.UUID, name, descript
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -274,7 +267,7 @@ func (r *repository) UpdateBid(ctx context.Context, id uuid.UUID, name, descript
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err = r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -300,7 +293,7 @@ func (r *repository) UpdateTenderStatus(ctx context.Context, id uuid.UUID, stat 
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql:" + sql)
+	log.Println("sql:" + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -334,7 +327,7 @@ func (r *repository) RollbackBid(ctx context.Context, id uuid.UUID, ver int) (bi
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql1: " + sql)
+	log.Println("sql1: " + sql)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -356,7 +349,7 @@ func (r *repository) RollbackBid(ctx context.Context, id uuid.UUID, ver int) (bi
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql2: " + sql)
+	log.Println("sql2: " + sql)
 
 	rows, err = r.pool.Query(ctx, sql, args...)
 	if err != nil {
@@ -377,7 +370,7 @@ func (r *repository) RollbackBid(ctx context.Context, id uuid.UUID, ver int) (bi
 		return bid.Bid{}, err
 	}
 
-	fmt.Println("sql3: " + sql)
+	log.Println("sql3: " + sql)
 
 	rows, err = r.pool.Query(ctx, sql, args...)
 	if err != nil {

@@ -3,7 +3,6 @@ package tender
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 	"tender-service/internal/model"
@@ -22,12 +21,9 @@ func (c *controller) GetTenders(ctx context.Context) http.HandlerFunc {
 		var serviceTypes []tender.ServiceType
 
 		if rowServiceTypesString != "" {
-			log.Println("in", rowServiceTypesString)
 			rowServiceTypes := strings.Split(rowServiceTypesString, ",")
-			log.Println("rows", rowServiceTypes)
 			serviceTypes = make([]tender.ServiceType, len(rowServiceTypes))
 			for i := 0; i < len(rowServiceTypes); i++ {
-				log.Println("cur", serviceTypes[i])
 				if !tender.IsServiceType(rowServiceTypes[i]) {
 					c.errHandler.Handler(model.NewBadRequestError(op, errIncorrectServiceType), writer)
 					return
@@ -35,8 +31,6 @@ func (c *controller) GetTenders(ctx context.Context) http.HandlerFunc {
 				serviceTypes[i] = tender.ServiceType(rowServiceTypes[i])
 			}
 		}
-
-		log.Println("type", serviceTypes)
 
 		tenders, err := c.tenderService.GetTenders(ctx, p, serviceTypes)
 		if err != nil {
