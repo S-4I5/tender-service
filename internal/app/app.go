@@ -84,7 +84,7 @@ func (a *App) setupHttpServer(ctx context.Context) error {
 		httpSwagger.URL("/docs/openapi.yml"),
 	))
 
-	mmain.HandleFunc("/docs/openapi.yml", func(w http.ResponseWriter, r *http.Request) {
+	main.HandleFunc("/docs/openapi.yml", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./docs/openapi.yml")
 	})
 
