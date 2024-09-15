@@ -9,10 +9,10 @@ func CreateBidDtoToBid(dto dto.CreateBidDto) bid.Bid {
 	return bid.Bid{
 		Name:        dto.Name,
 		Description: dto.Description,
-		Status:      dto.Status,
 		TenderId:    dto.TenderId,
 		AuthorType:  dto.AuthorType,
 		AuthorId:    dto.AuthorId,
+		Status:      bid.Created,
 		Version:     1,
 	}
 }

@@ -34,6 +34,7 @@ var (
 	errEmployeeNotBidAuhtor          = fmt.Errorf("employee not auuthor of bid")
 	errEmployeeNotInBidOrg           = fmt.Errorf("employee not in bid org")
 	errNoReviewsFound                = fmt.Errorf("no reviews found")
+	errCannotBidOnClosedTender       = fmt.Errorf("cannot make bid on closed tender")
 )
 
 func NewBidService(
@@ -55,8 +56,13 @@ func NewBidService(
 }
 
 func (s *service) CreateNewBid(ctx context.Context, createDto dto.CreateBidDto) (dto.BidDto, error) {
-	if err := s.tenderService.ValidateTenderExists(ctx, createDto.TenderId); err != nil {
+	op := "bid_service.create_bid"
+	ten, err := s.tenderService.GetTenderById(ctx, createDto.TenderId)
+	if err != nil {
 		return dto.BidDto{}, err
+	}
+	if ten.Status != tender.Published {
+		return dto.BidDto{}, model.NewBadRequestError(op, errCannotBidOnClosedTender)
 	}
 
 	if err := s.employeeService.ValidateEmployeeExistsById(ctx, createDto.AuthorId); err != nil {

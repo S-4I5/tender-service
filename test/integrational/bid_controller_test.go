@@ -22,7 +22,7 @@ func (s *ApiTestSuite) TestCreateBid() {
 	tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 		Name:            "1",
 		Description:     "2",
-		Status:          "Created",
+		Status:          tender.Published,
 		ServiceType:     "Delivery",
 		OrganizationId:  orgId,
 		CreatorUsername: "test",
@@ -31,7 +31,6 @@ func (s *ApiTestSuite) TestCreateBid() {
 	given := dto.CreateBidDto{
 		Name:        "1",
 		Description: "1",
-		Status:      "Created",
 		TenderId:    tend.Id,
 		AuthorType:  bid.AuthorUser,
 		AuthorId:    empId,
@@ -55,7 +54,7 @@ func (s *ApiTestSuite) TestReturn401WhenCreateBidAndEmployeeDontExists() {
 	tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 		Name:            "1",
 		Description:     "2",
-		Status:          "Created",
+		Status:          tender.Published,
 		ServiceType:     "Delivery",
 		OrganizationId:  orgId,
 		CreatorUsername: "test",
@@ -64,7 +63,6 @@ func (s *ApiTestSuite) TestReturn401WhenCreateBidAndEmployeeDontExists() {
 	given := dto.CreateBidDto{
 		Name:        "1",
 		Description: "1",
-		Status:      "Created",
 		TenderId:    tend.Id,
 		AuthorType:  bid.AuthorUser,
 		AuthorId:    id,
@@ -87,7 +85,6 @@ func (s *ApiTestSuite) TestReturn404WhenCreateBidAndTenderDontExists() {
 	given := dto.CreateBidDto{
 		Name:        "1",
 		Description: "1",
-		Status:      "Created",
 		TenderId:    id,
 		AuthorType:  bid.AuthorUser,
 		AuthorId:    empId,
@@ -111,7 +108,7 @@ func (s *ApiTestSuite) TestReturn403WhenCreateBidByOrgWhenEmployeeNotInOrg() {
 	tend, _ := s.tenderRepository.SaveTender(context.Background(), tender.Tender{
 		Name:            "1",
 		Description:     "2",
-		Status:          "Created",
+		Status:          tender.Published,
 		ServiceType:     "Delivery",
 		OrganizationId:  orgId,
 		CreatorUsername: "test",
@@ -120,7 +117,6 @@ func (s *ApiTestSuite) TestReturn403WhenCreateBidByOrgWhenEmployeeNotInOrg() {
 	given := dto.CreateBidDto{
 		Name:        "1",
 		Description: "1",
-		Status:      "Created",
 		TenderId:    tend.Id,
 		AuthorType:  bid.AuthorOrganization,
 		AuthorId:    freeEmpId,
@@ -562,7 +558,7 @@ func (s *ApiTestSuite) TestEditBid() {
 	tend, err := s.tenderRepository.SaveTender(ctx, tender.Tender{
 		Name:            "1",
 		Description:     "2",
-		Status:          "Created",
+		Status:          tender.Published,
 		ServiceType:     "Delivery",
 		OrganizationId:  orgId,
 		CreatorUsername: "test",

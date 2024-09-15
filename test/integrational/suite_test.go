@@ -73,7 +73,7 @@ func (s *ApiTestSuite) SetupSuite() {
 	curApp, err := app.NewApp(context.Background(), config.Config{
 		Server: config.ServerConfig{Address: fmt.Sprintf(":%d", randomPort)},
 		Postgres: config.PostgresConfig{
-			MigrationsDir: "../../migrations/test",
+			MigrationsDir: "../../migrations/test/clear",
 			Conn:          conn,
 		},
 	})

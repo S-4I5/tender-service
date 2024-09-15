@@ -16,8 +16,9 @@ install-linter:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install golang.org/x/tools/cmd/goimports@latest
 
-.PHONY: run-it
+.PHONY: run-it-clean
 run-it:
+	go clean -testcache
 	go test ./test/integrational
 
 .PHONY: run-compose

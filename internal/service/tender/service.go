@@ -106,13 +106,11 @@ func (s *service) GetTenderStatus(ctx context.Context, tenderId uuid.UUID, usern
 func (s *service) UpdateTenderStatus(ctx context.Context, tenderId uuid.UUID, username string, status tender.Status) (dto.TenderDto, error) {
 	err := s.ValidateEmployeeRightsOnTender(ctx, tenderId, username)
 	if err != nil {
-		fmt.Println("e2")
 		return dto.TenderDto{}, err
 	}
 
 	updated, err := s.tenderRepository.UpdateTenderStatus(ctx, tenderId, status)
 	if err != nil {
-		fmt.Println("ee", err)
 		return dto.TenderDto{}, err
 	}
 
@@ -122,13 +120,11 @@ func (s *service) UpdateTenderStatus(ctx context.Context, tenderId uuid.UUID, us
 func (s *service) EditTender(ctx context.Context, tenderDto dto.UpdateTenderDto, tenderId uuid.UUID, username string) (dto.TenderDto, error) {
 	err := s.ValidateEmployeeRightsOnTender(ctx, tenderId, username)
 	if err != nil {
-		fmt.Println("XD")
 		return dto.TenderDto{}, err
 	}
 
 	updated, err := s.tenderRepository.UpdateTender(ctx, tenderId, tenderDto.Name, tenderDto.Description, tenderDto.ServiceType)
 	if err != nil {
-		fmt.Println("XD1", err)
 		return dto.TenderDto{}, err
 	}
 

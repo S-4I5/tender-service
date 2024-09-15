@@ -9,7 +9,7 @@ services:
     container_name: tender-service_app_container
     environment:
       - POSTGRES_CONN=postgres://postgres:postgres@tender-service-db:5432/tender-service
-      - MIGRATIONS_DIR=./migrations/test
+      - MIGRATIONS_DIR=./migrations/test/users
     restart: unless-stopped
     depends_on:
       tender-service-db:

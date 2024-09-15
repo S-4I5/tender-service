@@ -9,7 +9,6 @@ import (
 type CreateBidDto struct {
 	Name        string         `json:"name" validate:"required"`
 	Description string         `json:"description" validate:"required"`
-	Status      bid.Status     `json:"status" validate:"required"`
 	TenderId    uuid.UUID      `json:"tenderId" validate:"required"`
 	AuthorType  bid.AuthorType `json:"authorType" validate:"required"`
 	AuthorId    uuid.UUID      `json:"authorId" validate:"required"`

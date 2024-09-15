@@ -51,7 +51,7 @@ func (r *repository) SaveBid(ctx context.Context, b bid.Bid) (bid.Bid, error) {
 
 	bidBuilder := squirrel.Insert(bidTableName).PlaceholderFormat(squirrel.Dollar).
 		Columns(statusColumnName, tenderIdColumnName, AuthorIdColumnName, authorTypeColumnName, decisionColumnName).
-		Values(bid.Created, b.TenderId.String(), b.AuthorId.String(), b.AuthorType, bid.None).
+		Values(b.Status, b.TenderId.String(), b.AuthorId.String(), b.AuthorType, bid.None).
 		Suffix(returningAllSuffix)
 
 	sql, args, err := bidBuilder.ToSql()

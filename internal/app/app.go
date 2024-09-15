@@ -102,6 +102,7 @@ func (a *App) Run() error {
 }
 
 func (a *App) Stop() error {
+	log.Println("Gracefully shutdown...")
 	return a.server.Shutdown(context.Background())
 }
 
