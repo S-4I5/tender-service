@@ -23,18 +23,18 @@ P.S Надеюсь, что везде попал с форматами в openap
 * test/clear : содержит все необходимые таблицы для работы с "пустой" дб. Используется в it тестах и для локального запсука. (Используется в тестах)
 * test/users : содержит всё то же, что и clear, но и несколько юзеров и групп для локальной отладки. (Используется в приложенном docker-compose)
 
-## 3.1 Via go
+### 3.1 Via go
 ```
 go run ./cmd/main.go
 ```
 
-## 3.2 Via docker
+### 3.2 Via docker
 ```
 docker build -t tender-service .
 docker run -p 8080:8080 --name tender-service_container -e {some envs} tender-service
 ```
 
-## 3.3 Via docker compose (With PostgreSQL container)
+### 3.3 Via docker compose (With PostgreSQL container)
 ```
 docker-compose up
 ```
